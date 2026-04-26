@@ -18,6 +18,9 @@ const useChannelSlice = () => {
   const useChannels = (): Channel[] =>
     useAppSelector((state: RootState) => state.channel.channels);
 
+  const useCategories = (): Channel[] =>
+    useAppSelector((state: RootState) => state.channel.categories);
+
   const useSelectedChannel = (): Channel | Maybe =>
     useAppSelector((state: RootState) => state.channel.selectedChannel);
 
@@ -29,6 +32,7 @@ const useChannelSlice = () => {
 
   const state = {
     channels: useChannels,
+    categories: useCategories,
     selectedChannel: useSelectedChannel,
     isLoading: useIsLoading,
     selectedExportChannels: useSelectedExportChannels,

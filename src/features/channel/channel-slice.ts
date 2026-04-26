@@ -8,9 +8,10 @@ import DiscordService from "../../services/discord-service";
 
 const initialState: ChannelState = {
   channels: [],
+  categories: [],
   selectedChannel: null,
   isLoading: null,
-  selectedExportChannels: [], // Array of channel ID's, used for exporting Guild}
+  selectedExportChannels: [],
 };
 
 export const channelSlice = createSlice({
@@ -22,6 +23,9 @@ export const channelSlice = createSlice({
     },
     setChannels: (state, { payload }: { payload: Channel[] }): void => {
       state.channels = payload;
+    },
+    setCategories: (state, { payload }: { payload: Channel[] }): void => {
+      state.categories = payload;
     },
     setChannel: (state, { payload }: { payload: Snowflake | null }): void => {
       const selectedChannel = state.channels.find(
@@ -44,6 +48,7 @@ export const channelSlice = createSlice({
 export const {
   setIsLoading,
   setChannels,
+  setCategories,
   setChannel,
   resetChannel,
   setSelectedExportChannels,
@@ -60,12 +65,10 @@ export const getChannels =
         settings,
       ).fetchChannels(token, guildId);
       if (success && data) {
-        dispatch(
-          setChannels(
-            data.filter((c) => c.type !== ChannelType.GUILD_CATEGORY),
-          ),
-        );
+        dispatch(setCategories(data.filter((c) => c.type === ChannelType.GUILD_CATEGORY)));
+        dispatch(setChannels(data.filter((c) => c.type !== ChannelType.GUILD_CATEGORY)));
       } else {
+        dispatch(setCategories([]));
         dispatch(setChannels([]));
       }
       dispatch(setIsLoading(false));

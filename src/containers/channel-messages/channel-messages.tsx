@@ -65,6 +65,7 @@ function ChannelMessages() {
     loadChannel,
   } = useChannelSlice();
   const channels = channelState.channels();
+  const categories = channelState.categories();
   const selectedExportChannels = channelState.selectedExportChannels();
 
   const {
@@ -145,6 +146,18 @@ function ChannelMessages() {
   const handleGuildChange = (id: Snowflake | null) => {
     changeGuild(id);
     setSearchTouched(false);
+  };
+
+  const handleCategoryChange = (categoryId: Snowflake | null) => {
+    if (!categoryId) {
+      setSelectedExportChannels([]);
+      return;
+    }
+    const channelIds = channels
+      .filter((c) => c.parent_id === categoryId)
+      .map((c) => c.id);
+    channelIds.forEach((id) => loadChannel(id));
+    setSelectedExportChannels(channelIds);
   };
 
   const pauseCancelDisabled = !messagesLoading;
@@ -247,6 +260,21 @@ function ChannelMessages() {
                       getOptionIconSrc={(id) => {
                         const guild = guilds.find((g) => g.id === id);
                         return guild && getIconUrl(guild);
+                      }}
+                    />
+
+                    <EnhancedAutocomplete
+                      label="Category"
+                      options={categories.map((c) => c.id)}
+                      getOptionLabel={(id) =>
+                        categories.find((c) => c.id === id)?.name || ""
+                      }
+                      value={[]}
+                      disabled={!selectedGuild?.id || messagesLoading || discrubCancelled}
+                      onChange={(value) => {
+                        if (typeof value === "string" || !value) {
+                          handleCategoryChange(value);
+                        }
                       }}
                     />
                   </Stack>
