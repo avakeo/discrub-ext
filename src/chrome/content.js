@@ -30,13 +30,10 @@ if (!globalThis._discrubListenerAdded) {
           overlay.id = "injected_dialog";
           overlay.style.cssText = [
             "position:fixed",
-            "top:0", "left:0",
-            "width:100vw", "height:100vh",
-            "display:flex",
-            "align-items:center",
-            "justify-content:center",
+            "top:50%", "left:50%",
+            "transform:translate(-50%,-50%)",
             "z-index:2147483647",
-            "background:rgba(0,0,0,0.6)",
+            "pointer-events:none",
           ].join(";");
           const iframe = document.createElement("iframe");
           iframe.id = "injected_dialog_iframe";
@@ -45,6 +42,7 @@ if (!globalThis._discrubListenerAdded) {
             "border:none",
             "border-radius:6px",
             "width:720px", "height:615px",
+            "pointer-events:auto",
           ].join(";");
           overlay.appendChild(iframe);
           document.documentElement.appendChild(overlay);
