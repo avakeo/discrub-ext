@@ -61,12 +61,10 @@ function ChannelMessages() {
 
   const {
     state: channelState,
-    changeChannel,
     setSelectedExportChannels,
     loadChannel,
   } = useChannelSlice();
   const channels = channelState.channels();
-  const selectedChannel = channelState.selectedChannel();
   const selectedExportChannels = channelState.selectedExportChannels();
 
   const {
@@ -139,7 +137,7 @@ function ChannelMessages() {
   };
 
   const fetchChannelData = () => {
-    getMessageData(selectedGuild?.id || null, selectedChannel?.id || null);
+    getMessageData(selectedGuild?.id || null, null);
     setSearchTouched(true);
     setExpanded(false);
   };
@@ -149,24 +147,16 @@ function ChannelMessages() {
     setSearchTouched(false);
   };
 
-  const handleChannelChange = (id: Snowflake | null) => {
-    changeChannel(id);
-    setSearchTouched(false);
-  };
-
   const pauseCancelDisabled = !messagesLoading;
   const guildFieldDisabled = messagesLoading || discrubCancelled;
-  const channelFieldDisabled =
-    !selectedGuild?.id || messagesLoading || discrubCancelled;
   const searchBtnDisabled =
     !selectedGuild?.id ||
     messagesLoading ||
-    (!isCriteriaActive(searchCriteria) && !selectedChannel?.id) ||
+    (!isCriteriaActive(searchCriteria) && !selectedExportChannels.length) ||
     discrubCancelled;
   const purgeDisabled = Boolean(
     !selectedGuild?.id ||
       messagesLoading ||
-      selectedChannel?.id ||
       messages.length > 0 ||
       discrubCancelled,
   );
@@ -259,75 +249,42 @@ function ChannelMessages() {
                         return guild && getIconUrl(guild);
                       }}
                     />
-
-                    <Tooltip
-                      title="Channel"
-                      description={getEntityHint(EntityHint.THREAD)}
-                      placement="top"
-                    >
-                      <EnhancedAutocomplete
-                        label="Channel"
-                        options={sortedChannels.map((c) => c.id)}
-                        getOptionLabel={(id) =>
-                          channels.find((c) => c.id === id)?.name || ""
-                        }
-                        value={selectedChannel ? [selectedChannel.id] : []}
-                        disabled={channelFieldDisabled}
-                        freeSolo
-                        onChange={(value) => {
-                          if (typeof value === "string" || !value) {
-                            handleChannelChange(value);
-                          }
-                        }}
-                        copyValue={sortedChannels
-                          .map((c) => c.name)
-                          .join("\r\n")}
-                        copyName="Channel List"
-                        getOptionIconSrc={(id) => {
-                          const channel = channels.find((c) => c.id === id);
-                          return channel && getIconUrl(channel);
-                        }}
-                        optionIconStyle={{ filter: "invert(50%)" }}
-                      />
-                    </Tooltip>
                   </Stack>
 
-                  {selectedGuild?.id && channels.length > 0 && (
-                    <Tooltip
-                      title="Export Channels"
-                      description={getEntityHint(EntityHint.THREAD)}
-                      placement="top"
-                    >
-                      <EnhancedAutocomplete
-                        label="Export Channels"
-                        options={sortedChannels.map((c) => c.id)}
-                        value={selectedExportChannels}
-                        onChange={(e) => {
-                          if (Array.isArray(e)) {
-                            filterBoth(
-                              e,
-                              selectedExportChannels,
-                              channels.map(({ id }) => id),
-                            ).forEach((id) => loadChannel(id));
-                            setSelectedExportChannels(e);
-                          }
-                        }}
-                        getOptionLabel={(id) =>
-                          channels.find((c) => c.id === id)?.name || id
+                  <Tooltip
+                    title="Channels"
+                    description={getEntityHint(EntityHint.THREAD)}
+                    placement="top"
+                  >
+                    <EnhancedAutocomplete
+                      label="Channels"
+                      options={sortedChannels.map((c) => c.id)}
+                      value={selectedExportChannels}
+                      onChange={(e) => {
+                        if (Array.isArray(e)) {
+                          filterBoth(
+                            e,
+                            selectedExportChannels,
+                            channels.map(({ id }) => id),
+                          ).forEach((id) => loadChannel(id));
+                          setSelectedExportChannels(e);
                         }
-                        getOptionIconSrc={(id) => {
-                          const channel = channels.find((c) => c.id === id);
-                          return channel && getIconUrl(channel);
-                        }}
-                        multiple
-                        freeSolo
-                        optionIconStyle={{ filter: "invert(50%)" }}
-                        disabled={messagesLoading || discrubCancelled}
-                        copyValue={sortedChannels.map((c) => c.name).join("\r\n")}
-                        copyName="Channel List"
-                      />
-                    </Tooltip>
-                  )}
+                      }}
+                      getOptionLabel={(id) =>
+                        channels.find((c) => c.id === id)?.name || id
+                      }
+                      getOptionIconSrc={(id) => {
+                        const channel = channels.find((c) => c.id === id);
+                        return channel && getIconUrl(channel);
+                      }}
+                      multiple
+                      freeSolo
+                      optionIconStyle={{ filter: "invert(50%)" }}
+                      disabled={!selectedGuild?.id || messagesLoading || discrubCancelled}
+                      copyValue={sortedChannels.map((c) => c.name).join("\r\n")}
+                      copyName="Channel List"
+                    />
+                  </Tooltip>
 
                   <Stack
                     direction="column"
