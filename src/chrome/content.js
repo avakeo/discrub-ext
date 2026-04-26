@@ -1,9 +1,11 @@
 /*global chrome*/
+console.log("[Discrub] content script loaded");
 // hasListeners() is Chrome-only; use a flag for cross-browser compatibility
 if (!globalThis._discrubListenerAdded) {
   globalThis._discrubListenerAdded = true;
   chrome.runtime.onMessage.addListener(function (request, sender, callback) {
     const { message } = request;
+    console.log("[Discrub] message received:", message);
     switch (message) {
       case "INJECT_BUTTON":
         // eslint-disable-next-line no-case-declarations
@@ -26,30 +28,36 @@ if (!globalThis._discrubListenerAdded) {
         break;
       case "INJECT_DIALOG":
         if (!document.getElementById("injected_dialog")) {
-          const modal = document.createElement("dialog");
-          modal.id = "injected_dialog";
-          modal.innerHTML =
-            "<style>::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-thumb{background:#f1f1f1;}::-webkit-scrollbar-track{background:#888;}</style>";
-          modal.style.padding = 0;
-          modal.style.border = "none";
-          modal.style.backgroundColor = "transparent";
-          modal.style.overflow = "auto";
+          const overlay = document.createElement("div");
+          overlay.id = "injected_dialog";
+          overlay.style.cssText = [
+            "position:fixed",
+            "top:0", "left:0",
+            "width:100vw", "height:100vh",
+            "display:flex",
+            "align-items:center",
+            "justify-content:center",
+            "z-index:2147483647",
+            "background:rgba(0,0,0,0.6)",
+          ].join(";");
           const iframe = document.createElement("iframe");
           iframe.id = "injected_dialog_iframe";
           iframe.src = chrome.runtime.getURL("index.html");
-          iframe.height = "675px";
-          iframe.width = "1250px";
-          // iframe.style.border = "1px dotted gray";
-          modal.appendChild(iframe);
-          document.body.appendChild(modal);
-          document.getElementById("injected_dialog").showModal();
+          iframe.style.cssText = [
+            "border:none",
+            "border-radius:6px",
+            "width:720px", "height:615px",
+          ].join(";");
+          overlay.appendChild(iframe);
+          document.body.appendChild(overlay);
+        } else {
+          document.getElementById("injected_dialog").style.display = "flex";
         }
         break;
       case "CLOSE_INJECTED_DIALOG":
-        if (document.getElementById("injected_dialog")) {
-          document.getElementById("injected_dialog_iframe").remove();
-          document.getElementById("injected_dialog").remove();
-        }
+        // eslint-disable-next-line no-case-declarations
+        const dialog = document.getElementById("injected_dialog");
+        if (dialog) dialog.style.display = "none";
         break;
       case "GET_TOKEN":
         window.dispatchEvent(new Event("beforeunload"));
