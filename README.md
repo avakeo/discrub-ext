@@ -52,6 +52,38 @@
  - [Why isn't Discrub letting me manually load a User by their username?](https://github.com/prathercc/discrub-ext/blob/development/docs/faq/not_allowing_manual_load_of_username.md)
  - [How can I load messages for a specific Thread or Forum Post only?](https://github.com/prathercc/discrub-ext/blob/development/docs/faq/load_thread_or_forum_post.md)
 
+## Local Development (Firefox)
+
+### 前提条件
+- Node.js がインストールされていること
+- Firefox がインストールされていること
+
+### 手順
+
+1. 依存関係をインストールする
+
+   ```bash
+   npm install
+   ```
+
+2. 拡張機能をビルドする
+
+   ```bash
+   npm run build
+   ```
+
+   `dist/` フォルダにビルド成果物が生成されます。
+
+3. Firefox で `about:debugging#/runtime/this-firefox` を開く
+
+4. **「一時的なアドオンを読み込む...」** ボタンをクリックする
+
+5. `dist/manifest.json` を選択する
+
+これで拡張機能が一時的に読み込まれます（Firefox を再起動すると無効になります）。
+
+> **注意:** コードを変更した場合は `npm run build` を再実行し、Firefox の `about:debugging` ページで拡張機能の **「再読み込み」** ボタンを押してください。
+
 ## Contributing
 
 Feel free to create an [Issue](https://github.com/prathercc/discrub-ext/issues) if you have any ideas for improvement or notice any bugs that need to addressed.

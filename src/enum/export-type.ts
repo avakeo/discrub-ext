@@ -3,4 +3,5 @@ export enum ExportType {
   HTML = "html",
   CSV = "csv",
   MEDIA = "media",
+  IMAGES = "images",
 }

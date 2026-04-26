@@ -127,6 +127,7 @@ export type FilesFromMessagesProps = {
   exportUtils: ExportUtils;
   paths: { media: string };
   index: number;
+  imagesOnly?: boolean;
 };
 
 export type AvatarFromMessageProps = {
@@ -155,6 +156,7 @@ export type ProcessMessagesProps = {
   messages: Message[];
   paths: { media: string };
   exportUtils: ExportUtils;
+  imagesOnly?: boolean;
 };
 
 export type ExportHtmlProps = {

@@ -62,7 +62,9 @@ const ExportModalActions = ({
             <MenuItem dense onClick={() => handleExport(exportType)}>
               {exportType === ExportType.MEDIA
                 ? "Media Only"
-                : exportType.toUpperCase()}
+                : exportType === ExportType.IMAGES
+                  ? "Images Only"
+                  : exportType.toUpperCase()}
             </MenuItem>
           </Tooltip>
         ))}

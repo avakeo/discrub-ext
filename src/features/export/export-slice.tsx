@@ -217,6 +217,7 @@ const _downloadFilesFromMessage =
     exportUtils,
     paths,
     index,
+    imagesOnly,
   }: FilesFromMessagesProps): AppThunk<Promise<void>> =>
   async (dispatch, getState) => {
     const { settings } = getState().app;
@@ -260,10 +261,11 @@ const _downloadFilesFromMessage =
       const isVideo = entityIsVideo(entity);
       const isAudio = entityIsAudio(entity);
       // As far as I'm aware, Discord does not support embedded audio.
-      const shouldPerformDownload =
-        (isImage && (isAttachment(entity) ? isDlImages : isDlEmbedImages)) ||
-        (isVideo && (isAttachment(entity) ? isDlVideos : isDlEmbedVideos)) ||
-        (isAudio && isDlAudio);
+      const shouldPerformDownload = imagesOnly
+        ? isImage && isAttachment(entity)
+        : (isImage && (isAttachment(entity) ? isDlImages : isDlEmbedImages)) ||
+          (isVideo && (isAttachment(entity) ? isDlVideos : isDlEmbedVideos)) ||
+          (isAudio && isDlAudio);
 
       if (shouldPerformDownload) {
         const downloadUrls = getMediaUrls(entity);
@@ -820,6 +822,7 @@ const _processMessages =
     messages,
     paths,
     exportUtils,
+    imagesOnly,
   }: ProcessMessagesProps): AppThunk<Promise<void>> =>
   async (dispatch, _getState) => {
     for (const [i, message] of messages.entries()) {
@@ -832,10 +835,13 @@ const _processMessages =
           exportUtils,
           paths,
           index: i,
+          imagesOnly,
         }),
       );
-      await dispatch(_downloadEmojisFromMessage({ message, exportUtils }));
-      await dispatch(_downloadAvatarFromMessage({ message, exportUtils }));
+      if (!imagesOnly) {
+        await dispatch(_downloadEmojisFromMessage({ message, exportUtils }));
+        await dispatch(_downloadAvatarFromMessage({ message, exportUtils }));
+      }
 
       dispatch(
         setStatus(
@@ -987,7 +993,7 @@ const _compressMessages =
         const currentPage = getState().export.currentPage;
         const filePath = `${entityMainDirectory}/${getOsSafeString(entityName)}_page_${currentPage}.${format}`;
         if (await dispatch(isAppStopped())) break;
-        if (format !== ExportType.MEDIA) {
+        if (format !== ExportType.MEDIA && format !== ExportType.IMAGES) {
           dispatch(setStatus(`Archiving - ${filePath}`));
         }
 
@@ -1056,7 +1062,14 @@ export const exportMessages =
     const mediaPath = `${entityMainDirectory}/${safeEntityName}_media`;
     const paths = { media: mediaPath };
 
-    await dispatch(_processMessages({ messages, paths, exportUtils }));
+    await dispatch(
+      _processMessages({
+        messages,
+        paths,
+        exportUtils,
+        imagesOnly: format === ExportType.IMAGES,
+      }),
+    );
 
     if (messages.length > 0 && !(await dispatch(isAppStopped()))) {
       await dispatch(
@@ -1138,7 +1151,12 @@ export const exportChannels =
       const paths = { media: mediaPath };
 
       await dispatch(
-        _processMessages({ messages: exportMessages, paths, exportUtils }),
+        _processMessages({
+          messages: exportMessages,
+          paths,
+          exportUtils,
+          imagesOnly: format === ExportType.IMAGES,
+        }),
       );
 
       if (exportMessages.length > 0) {

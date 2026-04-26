@@ -194,6 +194,10 @@ const ExportButton = ({
   const exportTitle = `Export ${bulk ? exportType : "Messages"}`;
 
   const getTooltipDescription = (exportType: ExportType): string => {
+    if (exportType === ExportType.IMAGES) {
+      return "Image attachments only (no message data)";
+    }
+
     const descriptionArr: string[] = [];
 
     if (exportType !== ExportType.MEDIA) {
