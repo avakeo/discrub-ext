@@ -29,7 +29,7 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
         chrome.tabs.sendMessage(
           tabs[0].id,
           { message: "INJECT_BUTTON" },
-          () => {}
+          () => { void chrome.runtime.lastError; }
         );
       }
     });
