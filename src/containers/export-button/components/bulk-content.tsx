@@ -25,6 +25,8 @@ import {
 } from "../../../utils.ts";
 import Tooltip from "../../../common-components/tooltip/tooltip.tsx";
 import { EntityHint } from "../../../enum/entity-hint.ts";
+import ExportFormatConfig from "./export-format-config.tsx";
+import { ExportType } from "../../../enum/export-type.ts";
 
 type BulkContentProps = {
   isDm?: boolean;
@@ -35,6 +37,8 @@ type BulkContentProps = {
   settings: AppSettings;
   onChangeSettings: (settings: AppSettings) => void;
   loadChannel: (e: string) => void;
+  selectedFormat: ExportType;
+  onFormatChange: (format: ExportType) => void;
 };
 
 export const getExportSettings = (
@@ -70,6 +74,10 @@ const BulkContent = ({
   channels,
   setSelectedExportChannels,
   loadChannel,
+  settings,
+  onChangeSettings,
+  selectedFormat,
+  onFormatChange,
 }: BulkContentProps) => {
   const sortedChannels = getSortedChannels(channels);
   const handleSelectAll = () => {
@@ -79,21 +87,6 @@ const BulkContent = ({
       setSelectedExportChannels([]);
     }
   };
-
-  let visibleSettings = [
-    DiscrubSetting.EXPORT_ARTIST_MODE,
-    DiscrubSetting.EXPORT_DOWNLOAD_MEDIA,
-    DiscrubSetting.EXPORT_PREVIEW_MEDIA,
-    DiscrubSetting.EXPORT_SEPARATE_THREAD_AND_FORUM_POSTS,
-    DiscrubSetting.EXPORT_MESSAGE_SORT_ORDER,
-    DiscrubSetting.EXPORT_MESSAGES_PER_PAGE,
-    DiscrubSetting.EXPORT_IMAGE_RES_MODE,
-  ];
-  if (isDm) {
-    visibleSettings = visibleSettings.filter(
-      (s) => s !== DiscrubSetting.EXPORT_SEPARATE_THREAD_AND_FORUM_POSTS,
-    );
-  }
 
   const channelSelectionTab: EnhancedTab = {
     label: "Channels",
@@ -147,6 +140,19 @@ const BulkContent = ({
     ),
   };
 
+  const exportTab: EnhancedTab = {
+    label: "Export",
+    getComponent: () => (
+      <ExportFormatConfig
+        selectedFormat={selectedFormat}
+        onFormatChange={onFormatChange}
+        settings={settings}
+        onChangeSettings={onChangeSettings}
+        isDm={isDm}
+      />
+    ),
+  };
+
   const criteriaTab: EnhancedTab = {
     label: "Criteria",
     getComponent: () => (
@@ -156,11 +162,6 @@ const BulkContent = ({
         visibleCriteria={defaultCriteria}
       />
     ),
-  };
-
-  const configurationTab: EnhancedTab = {
-    label: "Config",
-    getComponent: () => getExportSettings(visibleSettings, isDm),
   };
 
   const settingsTab: EnhancedTab = {
@@ -183,11 +184,11 @@ const BulkContent = ({
 
   const guildTabs: EnhancedTab[] = [
     channelSelectionTab,
-    configurationTab,
+    exportTab,
     settingsTab,
     criteriaTab,
   ];
-  const dmTabs: EnhancedTab[] = [configurationTab, settingsTab, criteriaTab];
+  const dmTabs: EnhancedTab[] = [exportTab, settingsTab, criteriaTab];
 
   return (
     <DialogContent>

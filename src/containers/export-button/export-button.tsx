@@ -13,12 +13,6 @@ import DefaultContent from "./components/default-content";
 import { useMessageSlice } from "../../features/message/use-message-slice";
 import BulkContent from "./components/bulk-content";
 import ExportMessages from "./components/export-messages";
-import {
-  punctuateStringArr,
-  stringToBool,
-  stringToTypedArray,
-} from "../../utils";
-import { MediaType } from "../../enum/media-type";
 
 type ExportButtonProps = {
   bulk?: boolean;
@@ -53,27 +47,6 @@ const ExportButton = ({
     state: appState,
   } = useAppSlice();
   const settings = appState.settings();
-  const folderingThreads = stringToBool(
-    settings.exportSeparateThreadAndForumPosts,
-  );
-  const artistMode = stringToBool(settings.exportUseArtistMode);
-  const previewMedia = stringToTypedArray<MediaType>(
-    settings.exportPreviewMedia_2,
-  );
-  const isPreviewingImages = previewMedia.some((mt) => mt === MediaType.IMAGES);
-  const isPreviewingVideos = previewMedia.some((mt) => mt === MediaType.VIDEOS);
-  const isPreviewingAudio = previewMedia.some((mt) => mt === MediaType.AUDIO);
-
-  const downloadMedia = stringToTypedArray<MediaType>(
-    settings.exportDownloadMedia_2,
-  );
-  const isDownloadingImages = downloadMedia.some(
-    (mt) => mt === MediaType.IMAGES,
-  );
-  const isDownloadingVideos = downloadMedia.some(
-    (mt) => mt === MediaType.VIDEOS,
-  );
-  const isDownloadingAudio = downloadMedia.some((mt) => mt === MediaType.AUDIO);
 
   const {
     state: channelState,
@@ -96,6 +69,9 @@ const ExportButton = ({
   const filters = messageState.filters();
 
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedFormat, setSelectedFormat] = useState<ExportType>(
+    ExportType.JSON,
+  );
 
   const exportType = isDm
     ? `DM${selectedDms.length > 1 ? "'s" : ""}`
@@ -119,7 +95,6 @@ const ExportButton = ({
 
   const handleDialogClose = () => {
     if (isGenerating || isExporting) {
-      // We are actively exporting, we need to send a cancel request
       setDiscrubCancelled(true);
     }
     if (bulk && isDm) {
@@ -132,7 +107,7 @@ const ExportButton = ({
     }
   };
 
-  const handleExportSelected = async (format: ExportType = ExportType.JSON) => {
+  const handleExport = async () => {
     if (bulk) {
       let channelsToExport: Channel[] = [];
       if (isDm && selectedDms.length) {
@@ -143,7 +118,7 @@ const ExportButton = ({
         );
       }
       if (channelsToExport.length) {
-        exportChannels(channelsToExport, exportUtils, format);
+        exportChannels(channelsToExport, exportUtils, selectedFormat);
       }
     } else {
       const entity = isDm ? selectedDms[0] : selectedChannel || selectedGuild;
@@ -153,7 +128,7 @@ const ExportButton = ({
           messagesToExport,
           entity.name || entity.id,
           exportUtils,
-          format,
+          selectedFormat,
         );
       }
     }
@@ -175,6 +150,8 @@ const ExportButton = ({
           settings={settings}
           onChangeSettings={setSettings}
           loadChannel={loadChannel}
+          selectedFormat={selectedFormat}
+          onFormatChange={setSelectedFormat}
         />
       );
     } else
@@ -187,6 +164,8 @@ const ExportButton = ({
           }
           settings={settings}
           onChangeSettings={setSettings}
+          selectedFormat={selectedFormat}
+          onFormatChange={setSelectedFormat}
         />
       );
   };
@@ -197,76 +176,11 @@ const ExportButton = ({
       : "";
   const exportTitle = `Export ${bulk ? exportType : "Messages"}${exportChannelCount}`;
 
-  const getTooltipDescription = (exportType: ExportType): string => {
-    if (exportType === ExportType.IMAGES) {
-      return "Image attachments only (no message data)";
-    }
-
-    const descriptionArr: string[] = [];
-
-    if (exportType !== ExportType.MEDIA) {
-      const exportAccessories: string[] = [
-        `${exportType.toUpperCase()} Format`,
-      ];
-
-      if (exportType === ExportType.HTML) {
-        const previewArr = [];
-        if (isPreviewingImages) {
-          previewArr.push("Images");
-        }
-        if (isPreviewingVideos) {
-          previewArr.push("Videos");
-        }
-        if (isPreviewingAudio) {
-          previewArr.push("Audio");
-        }
-        if (previewArr.length) {
-          exportAccessories.push(`${punctuateStringArr(previewArr)} Previewed`);
-        }
-      }
-
-      if (folderingThreads) {
-        exportAccessories.push("Threads & Forum Posts Foldered");
-      }
-
-      const accessory = punctuateStringArr(exportAccessories);
-      descriptionArr.push(
-        `Messages ${accessory.length ? `(${accessory})` : ""}`,
-      );
-    }
-
-    if (downloadMedia.length) {
-      const downloadArr = [];
-      if (isDownloadingImages) {
-        downloadArr.push("Images");
-      }
-      if (isDownloadingVideos) {
-        downloadArr.push("Videos");
-      }
-      if (isDownloadingAudio) {
-        downloadArr.push("Audio");
-      }
-      descriptionArr.push(
-        `Attached & Embedded ${punctuateStringArr(downloadArr)}${
-          artistMode ? " (Artist Mode)" : ""
-        }`,
-      );
-    }
-    if (!isDm) {
-      descriptionArr.push("Roles");
-    }
-    return `${descriptionArr.join(", ")}${
-      descriptionArr.length ? ", " : ""
-    }Emojis, and Avatars`;
-  };
-
   return (
     <>
       <Button
         disabled={disabled}
-        onClick={async () => {
-          setDialogOpen(true);
-        }}
+        onClick={() => setDialogOpen(true)}
         variant="contained"
       >
         {exportTitle}
@@ -285,13 +199,12 @@ const ExportButton = ({
       )}
       <ExportModal
         onCancel={handleDialogClose}
-        handleExportSelected={handleExportSelected}
+        onExport={handleExport}
         dialogOpen={dialogOpen}
         exportDisabled={exportDisabled}
         pauseDisabled={pauseDisabled}
         ContentComponent={getContentComponent()}
         dialogTitle={exportTitle}
-        getTooltipDescription={getTooltipDescription}
       />
     </>
   );

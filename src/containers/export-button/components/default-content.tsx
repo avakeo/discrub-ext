@@ -1,11 +1,11 @@
 import { DialogContent, DialogContentText, Typography } from "@mui/material";
 import ExportProgress from "./export-progress.tsx";
-import { DiscrubSetting } from "../../../enum/discrub-setting";
 import { AppSettings } from "../../../features/app/app-types";
 import EnhancedTabs, {
   EnhancedTab,
 } from "../../../common-components/enhanced-tabs/enhanced-tabs.tsx";
-import { getExportSettings } from "./bulk-content.tsx";
+import ExportFormatConfig from "./export-format-config.tsx";
+import { ExportType } from "../../../enum/export-type.ts";
 
 type DefaultContentProps = {
   isExporting: boolean;
@@ -13,32 +13,31 @@ type DefaultContentProps = {
   isDm: boolean;
   settings: AppSettings;
   onChangeSettings: (settings: AppSettings) => void;
+  selectedFormat: ExportType;
+  onFormatChange: (format: ExportType) => void;
 };
 
 const DefaultContent = ({
   isExporting,
   messageCount,
   isDm,
+  settings,
+  onChangeSettings,
+  selectedFormat,
+  onFormatChange,
 }: DefaultContentProps) => {
-  let visibleSettings = [
-    DiscrubSetting.EXPORT_ARTIST_MODE,
-    DiscrubSetting.EXPORT_DOWNLOAD_MEDIA,
-    DiscrubSetting.EXPORT_PREVIEW_MEDIA,
-    DiscrubSetting.EXPORT_SEPARATE_THREAD_AND_FORUM_POSTS,
-    DiscrubSetting.EXPORT_MESSAGES_PER_PAGE,
-    DiscrubSetting.EXPORT_IMAGE_RES_MODE,
-  ];
-  if (isDm) {
-    visibleSettings = visibleSettings.filter(
-      (s) => s !== DiscrubSetting.EXPORT_SEPARATE_THREAD_AND_FORUM_POSTS,
-    );
-  }
-
-  const configurationTab: EnhancedTab = {
-    label: "Config",
-    getComponent: () => getExportSettings(visibleSettings, isDm),
+  const exportTab: EnhancedTab = {
+    label: "Export",
+    getComponent: () => (
+      <ExportFormatConfig
+        selectedFormat={selectedFormat}
+        onFormatChange={onFormatChange}
+        settings={settings}
+        onChangeSettings={onChangeSettings}
+        isDm={isDm}
+      />
+    ),
   };
-  const tabs: EnhancedTab[] = [configurationTab];
 
   return (
     <DialogContent>
@@ -49,7 +48,7 @@ const DefaultContent = ({
               <strong>{messageCount}</strong> messages are available to export
             </Typography>
           </DialogContentText>
-          <EnhancedTabs tabs={tabs} />
+          <EnhancedTabs tabs={[exportTab]} />
         </>
       )}
       {isExporting && <ExportProgress />}

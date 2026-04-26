@@ -1,29 +1,26 @@
 import { Dialog } from "@mui/material";
-import { ExportType } from "../../../enum/export-type";
 import ExportModalActions from "./export-modal-actions";
 import React from "react";
 import EnhancedDialogTitle from "../../../common-components/enhanced-dialog/enhanced-dialog-title.tsx";
 
 type ExportModalProps = {
-  handleExportSelected: (val: ExportType) => void;
+  onExport: () => void;
   onCancel: () => void;
   dialogOpen: boolean;
   exportDisabled: boolean;
   pauseDisabled: boolean;
   ContentComponent: React.ReactNode;
   dialogTitle: string;
-  getTooltipDescription: (exportType: ExportType) => string;
 };
 
 const ExportModal = ({
   dialogOpen,
-  handleExportSelected,
+  onExport,
   exportDisabled,
   pauseDisabled,
   onCancel,
   ContentComponent,
   dialogTitle,
-  getTooltipDescription,
 }: ExportModalProps) => {
   return (
     <Dialog
@@ -34,11 +31,10 @@ const ExportModal = ({
       <EnhancedDialogTitle title={dialogTitle} onClose={onCancel} />
       {ContentComponent}
       <ExportModalActions
-        handleExportSelected={handleExportSelected}
+        onExport={onExport}
         exportDisabled={exportDisabled}
         pauseDisabled={pauseDisabled}
         onCancel={onCancel}
-        getTooltipDescription={getTooltipDescription}
       />
     </Dialog>
   );
