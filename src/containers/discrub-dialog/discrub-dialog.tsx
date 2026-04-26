@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import MenuBar from "./components/menu-bar";
-import About from "./components/about";
 import CloseWindowButton from "./components/close-window-button";
 import { Stack, Typography, Box } from "@mui/material";
-import DonationComponent from "./components/donation-component";
 import { useMessageSlice } from "../../features/message/use-message-slice";
 import { useGuildSlice } from "../../features/guild/use-guild-slice";
 import { useChannelSlice } from "../../features/channel/use-channel-slice";
@@ -16,16 +14,12 @@ import ChannelMessages from "../channel-messages/channel-messages";
 import DirectMessages from "../direct-messages/direct-messages";
 import Settings from "./components/settings";
 import { initializeSettings } from "../../services/chrome-service";
-import AnnouncementComponent from "./components/announcement-component";
-import { stringToBool } from "../../utils.ts";
 import { useExportSlice } from "../../features/export/use-export-slice.ts";
-import { BrowserEnvironment } from "../../enum/browser-environment.ts";
 import version from "../../version.ts";
 
 function DiscrubDialog() {
   const { palette } = useTheme();
   const [menuIndex, setMenuIndex] = useState(0);
-  const [isInitialized, setIsInitialized] = useState(false);
 
   const { resetAdvancedFilters, resetMessageData, resetFilters } =
     useMessageSlice();
@@ -34,10 +28,7 @@ function DiscrubDialog() {
   const { resetGuild } = useGuildSlice();
   const { resetDm } = useDmSlice();
   const { resetChannel } = useChannelSlice();
-  const { setDiscrubPaused, setSettings, state: appState } = useAppSlice();
-  const settings = appState.settings();
-  const showKoFiFeed = stringToBool(settings.appShowKoFiFeed);
-  const currentRevision = settings.cachedAnnouncementRev;
+  const { setDiscrubPaused, setSettings } = useAppSlice();
 
   const { getUserData } = useUserSlice();
 
@@ -57,7 +48,6 @@ function DiscrubDialog() {
       const settings = await initializeSettings();
       setSettings(settings);
       setExportUserMap(JSON.parse(settings.cachedUserMap));
-      setIsInitialized(true);
     };
     getUserData();
     init();
@@ -81,22 +71,11 @@ function DiscrubDialog() {
         m: 0,
       }}
     >
-      <DonationComponent
-        onChangeSettings={setSettings}
-        showKoFiFeed={showKoFiFeed}
-      />
-      <AnnouncementComponent
-        onChangeSettings={setSettings}
-        currentRevision={currentRevision}
-        isInitialized={isInitialized}
-        browserEnvironment={settings.browserEnv as BrowserEnvironment}
-      />
       <MenuBar menuIndex={menuIndex} setMenuIndex={handleChangeMenuIndex} />
       {menuIndex === 0 && <ChannelMessages />}
       {menuIndex === 1 && <DirectMessages />}
       {menuIndex === 2 && <Tags />}
-      {menuIndex === 3 && <About />}
-      {menuIndex === 4 && <Settings />}
+      {menuIndex === 3 && <Settings />}
 
       <Box sx={{ position: "fixed", top: "23px", right: "310px", opacity: 1 }}>
         <Stack

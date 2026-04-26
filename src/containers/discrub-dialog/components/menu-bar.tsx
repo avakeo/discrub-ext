@@ -1,13 +1,11 @@
 import { useState } from "react";
 import ChatIcon from "@mui/icons-material/Chat";
 import EmailIcon from "@mui/icons-material/Email";
-import DataObjectIcon from "@mui/icons-material/DataObject";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import LoyaltyIcon from "@mui/icons-material/Loyalty";
 import {
   Box,
   Button,
-  Divider,
-  Icon,
   ListItemIcon,
   ListItemText,
   Menu,
@@ -15,8 +13,6 @@ import {
 } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
-import RedditIcon from "@mui/icons-material/Reddit";
-import LoyaltyIcon from "@mui/icons-material/Loyalty";
 import { useExportSlice } from "../../../features/export/use-export-slice";
 import { useAppSlice } from "../../../features/app/use-app-slice";
 import { useMessageSlice } from "../../../features/message/use-message-slice";
@@ -48,31 +44,12 @@ const MenuBar = ({
     { name: "Channel Messages", icon: <ChatIcon /> },
     { name: "Direct Messages", icon: <EmailIcon /> },
     { name: "Tags", icon: <LoyaltyIcon /> },
-    { name: "Change Log", icon: <DataObjectIcon /> },
     { name: "Settings", icon: <ManageAccountsIcon /> },
   ];
 
   const handleMenuClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(e.currentTarget);
   };
-
-  const redirects = [
-    {
-      title: "Star on GitHub",
-      img: "github-logo.svg",
-      url: "https://github.com/prathercc/discrub-ext",
-    },
-    {
-      title: "Review on Webstore",
-      img: "chromestore.svg",
-      url: "https://chrome.google.com/webstore/detail/discrub/plhdclenpaecffbcefjmpkkbdpkmhhbj",
-    },
-    {
-      title: "Donate with Ko-Fi",
-      img: "kofi.svg",
-      url: "https://ko-fi.com/prathercc",
-    },
-  ];
 
   return (
     <Box
@@ -87,23 +64,6 @@ const MenuBar = ({
       >
         Menu
       </Button>
-      {redirects.map((redirect) => (
-        <Button
-          onClick={() => window.open(redirect.url, "_blank")}
-          color="secondary"
-          startIcon={
-            <Icon>
-              <img
-                style={{ display: "flex", height: "inherit", width: "inherit" }}
-                src={`resources/media/${redirect.img}`}
-                alt={redirect.title}
-              />
-            </Icon>
-          }
-        >
-          {redirect.title}
-        </Button>
-      ))}
 
       <Menu
         sx={{ textTransform: "none" }}
@@ -112,33 +72,18 @@ const MenuBar = ({
         onClose={() => setAnchorEl(null)}
       >
         {menuItems.map((menuItem, i) => (
-          <>
-            {menuItem.name === "Change Log" ? <Divider /> : null}
-            <MenuItem
-              key={menuItem.name}
-              disabled={menuIndex === i}
-              onClick={() => {
-                setMenuIndex(i);
-                setAnchorEl(null);
-              }}
-            >
-              <ListItemIcon>{menuItem.icon}</ListItemIcon>
-              <ListItemText>{menuItem.name}</ListItemText>
-            </MenuItem>
-          </>
+          <MenuItem
+            key={menuItem.name}
+            disabled={menuIndex === i}
+            onClick={() => {
+              setMenuIndex(i);
+              setAnchorEl(null);
+            }}
+          >
+            <ListItemIcon>{menuItem.icon}</ListItemIcon>
+            <ListItemText>{menuItem.name}</ListItemText>
+          </MenuItem>
         ))}
-        <Divider />
-        <MenuItem
-          onClick={() => {
-            window.open("https://www.reddit.com/r/discrub/", "_blank");
-            setAnchorEl(null);
-          }}
-        >
-          <ListItemIcon>
-            <RedditIcon />
-          </ListItemIcon>
-          <ListItemText>Reddit</ListItemText>
-        </MenuItem>
       </Menu>
     </Box>
   );
