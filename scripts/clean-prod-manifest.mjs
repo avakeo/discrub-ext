@@ -10,4 +10,9 @@ if (Array.isArray(manifest.web_accessible_resources)) {
   }
 }
 
+// Firefox MV3 requires background.scripts as a fallback for service_worker
+if (manifest.background?.service_worker) {
+  manifest.background.scripts = [manifest.background.service_worker];
+}
+
 writeFileSync(path, JSON.stringify(manifest, null, 2));
