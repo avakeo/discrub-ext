@@ -19,6 +19,7 @@ import PurgeButton from "../purge-button/purge-button";
 import ExportButton from "../export-button/export-button";
 import TokenNotFound from "../../components/token-not-found";
 import {
+  filterBoth,
   getEntityHint,
   getIconUrl,
   getSortedChannels,
@@ -58,9 +59,15 @@ function ChannelMessages() {
   const guilds = guildState.guilds();
   const selectedGuild = guildState.selectedGuild();
 
-  const { state: channelState, changeChannel } = useChannelSlice();
+  const {
+    state: channelState,
+    changeChannel,
+    setSelectedExportChannels,
+    loadChannel,
+  } = useChannelSlice();
   const channels = channelState.channels();
   const selectedChannel = channelState.selectedChannel();
+  const selectedExportChannels = channelState.selectedExportChannels();
 
   const {
     state: messageState,
@@ -164,11 +171,7 @@ function ChannelMessages() {
       discrubCancelled,
   );
   const exportDisabled = Boolean(
-    !selectedGuild?.id ||
-      messagesLoading ||
-      selectedChannel?.id ||
-      messages.length > 0 ||
-      discrubCancelled,
+    !selectedGuild?.id || messagesLoading || discrubCancelled,
   );
 
   const sortedGuilds = getSortedGuilds(guilds);
@@ -288,6 +291,43 @@ function ChannelMessages() {
                       />
                     </Tooltip>
                   </Stack>
+
+                  {selectedGuild?.id && channels.length > 0 && (
+                    <Tooltip
+                      title="Export Channels"
+                      description={getEntityHint(EntityHint.THREAD)}
+                      placement="top"
+                    >
+                      <EnhancedAutocomplete
+                        label="Export Channels"
+                        options={sortedChannels.map((c) => c.id)}
+                        value={selectedExportChannels}
+                        onChange={(e) => {
+                          if (Array.isArray(e)) {
+                            filterBoth(
+                              e,
+                              selectedExportChannels,
+                              channels.map(({ id }) => id),
+                            ).forEach((id) => loadChannel(id));
+                            setSelectedExportChannels(e);
+                          }
+                        }}
+                        getOptionLabel={(id) =>
+                          channels.find((c) => c.id === id)?.name || id
+                        }
+                        getOptionIconSrc={(id) => {
+                          const channel = channels.find((c) => c.id === id);
+                          return channel && getIconUrl(channel);
+                        }}
+                        multiple
+                        freeSolo
+                        optionIconStyle={{ filter: "invert(50%)" }}
+                        disabled={messagesLoading || discrubCancelled}
+                        copyValue={sortedChannels.map((c) => c.name).join("\r\n")}
+                        copyName="Channel List"
+                      />
+                    </Tooltip>
+                  )}
 
                   <Stack
                     direction="column"

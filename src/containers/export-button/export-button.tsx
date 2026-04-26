@@ -122,7 +122,7 @@ const ExportButton = ({
       // We are actively exporting, we need to send a cancel request
       setDiscrubCancelled(true);
     }
-    if (bulk) {
+    if (bulk && isDm) {
       setSelectedExportChannels([]);
     }
     setDiscrubPaused(false);
@@ -191,7 +191,11 @@ const ExportButton = ({
       );
   };
 
-  const exportTitle = `Export ${bulk ? exportType : "Messages"}`;
+  const exportChannelCount =
+    bulk && !isDm && selectedExportChannels.length > 0
+      ? ` (${selectedExportChannels.length})`
+      : "";
+  const exportTitle = `Export ${bulk ? exportType : "Messages"}${exportChannelCount}`;
 
   const getTooltipDescription = (exportType: ExportType): string => {
     if (exportType === ExportType.IMAGES) {
