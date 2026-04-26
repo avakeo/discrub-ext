@@ -1,5 +1,7 @@
 /*global chrome*/
-if (!chrome.runtime.onMessage.hasListeners())
+// hasListeners() is Chrome-only; use a flag for cross-browser compatibility
+if (!globalThis._discrubListenerAdded) {
+  globalThis._discrubListenerAdded = true;
   chrome.runtime.onMessage.addListener(function (request, sender, callback) {
     const { message } = request;
     switch (message) {
@@ -62,3 +64,4 @@ if (!chrome.runtime.onMessage.hasListeners())
         break;
     }
   });
+}
